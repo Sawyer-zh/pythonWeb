@@ -1,11 +1,15 @@
 from __future__ import absolute_import, unicode_literals
+
 import os
+
 from flask import Flask, request, abort, render_template
-from wechatpy.crypto import WeChatCrypto
 from wechatpy import parse_message, create_reply
-from wechatpy.utils import check_signature
-from wechatpy.exceptions import InvalidSignatureException
+from wechatpy.crypto import WeChatCrypto
 from wechatpy.exceptions import InvalidAppIdException
+from wechatpy.exceptions import InvalidSignatureException
+from wechatpy.utils import check_signature
+
+from .robot import auto_chat_tuling
 
 # set token or get from environments
 TOKEN = os.getenv('WECHAT_TOKEN', 'DailyFei')
@@ -30,13 +34,6 @@ def wechat():
     encrypt_type = request.args.get('encrypt_type', '')
     msg_signature = request.args.get('msg_signature', '')
 
-    print('signature:', signature)
-    print('timestamp: ', timestamp)
-    print('nonce:', nonce)
-    print('echo_str:', echo_str)
-    print('encrypt_type:', encrypt_type)
-    print('msg_signature:', msg_signature)
-
     try:
         check_signature(TOKEN, signature, timestamp, nonce)
     except InvalidSignatureException:
@@ -58,7 +55,8 @@ def wechat():
             abort(403)
         msg = parse_message(msg)
         if msg.type == 'text':
-            reply = create_reply(msg.content, msg)
+            replyString = auto_chat_tuling(msg.content)
+            reply = create_reply(replyString, msg)
         else:
             reply = create_reply('Sorry, can not handle this for now', msg)
         return crypto.encrypt_message(
@@ -69,4 +67,4 @@ def wechat():
 
 
 if __name__ == '__main__':
-    app.run('127.0.0.1', 5001, debug=True)
+    app.run('0.0.0.1', 80, debug=False)
