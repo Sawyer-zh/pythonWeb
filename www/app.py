@@ -9,7 +9,7 @@ from wechatpy.exceptions import InvalidAppIdException
 from wechatpy.exceptions import InvalidSignatureException
 from wechatpy.utils import check_signature
 
-from .robot import auto_chat_tuling
+from robot import auto_chat_tuling
 
 # set token or get from environments
 TOKEN = os.getenv('WECHAT_TOKEN', 'DailyFei')
@@ -41,7 +41,6 @@ def wechat():
     if request.method == 'GET':
         return echo_str
     else:
-        print('Raw message: \n%s' % request.data)
         crypto = WeChatCrypto(TOKEN, EncodingAESKey, AppId)
         try:
             msg = crypto.decrypt_message(
@@ -50,7 +49,6 @@ def wechat():
                 timestamp,
                 nonce
             )
-            print('Descypted message: \n%s' % msg)
         except (InvalidSignatureException, InvalidAppIdException):
             abort(403)
         msg = parse_message(msg)
@@ -67,4 +65,4 @@ def wechat():
 
 
 if __name__ == '__main__':
-    app.run('0.0.0.1', 80, debug=False)
+    app.run('0.0.0.0', 80, debug=False)
