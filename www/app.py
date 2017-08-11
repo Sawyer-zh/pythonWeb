@@ -10,7 +10,7 @@ from wechatpy.exceptions import InvalidSignatureException
 from wechatpy.utils import check_signature
 
 from robot import auto_chat_tuling
-
+from handler_message import handler
 # set token or get from environments
 TOKEN = os.getenv('WECHAT_TOKEN', 'DailyFei')
 EncodingAESKey = os.getenv('WECHAT_ENCODING_AES_KEY', 'fRUozyJdtyBPs90htH2Gew1vc9iwNkyIvteSg7IJveq')
@@ -51,12 +51,16 @@ def wechat():
             )
         except (InvalidSignatureException, InvalidAppIdException):
             abort(403)
-        msg = parse_message(msg)
-        if msg.type == 'text':
-            replyString = auto_chat_tuling(msg.content)
-            reply = create_reply(replyString, msg)
-        else:
-            reply = create_reply('Sorry, can not handle this for now', msg)
+        # msg = parse_message(msg)
+
+        reply = handler(msg)
+
+
+        # if msg.type == 'text':
+        #     replyString = auto_chat_tuling(msg.content)
+        #     reply = create_reply(replyString, msg)
+        # else:
+        #     reply = create_reply('Sorry, can not handle this for now', msg)
         return crypto.encrypt_message(
             reply.render(),
             nonce,
