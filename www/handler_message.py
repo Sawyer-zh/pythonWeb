@@ -1,6 +1,7 @@
 import re
 
 from net_ease import search_music
+from official_account import get_recent
 from robot import auto_chat_tuling
 from wechatpy import parse_message, create_reply
 from wechatpy.replies import TextReply, ArticlesReply
@@ -39,19 +40,39 @@ def reply_music(msg):
     return articlesReply
 
 
+def reply_article(msg):
+    r = get_recent(msg)
+    if r == '':
+        reply = auto_chat_tuling(msg)
+        return reply_text(reply)
+
+    articleReply = ArticlesReply()
+    one = {'title': r['wechat_name'],
+           'description': r['introduction'],
+           'image': r['headimage'],
+           'url': r['profile_url']
+           }
+    articleReply.add_article(one)
+    return articleReply
+
+
 def handler_text(msg):
     ret = re.search(r'歌曲[,: ，。](.*)$', msg)
     if ret:
         return reply_music(ret.group(1))
-    else:
-        reply = auto_chat_tuling(msg)
-        return reply_text(reply)
+    ret = re.search(r'公众号[,: ，。](.*)$', msg)
+    if ret:
+        return reply_article(ret.group(1))
+
+    reply = auto_chat_tuling(msg)
+    return reply_text(reply)
 
 
 def handler_event(msg):
     if msg == 'subscribe':
         reply = '''您好,欢迎关注我!
 回复'歌曲 歌曲名'即可收听歌曲
+回复'公众号 公众号名称'即可获得该公众号最近10条文章
 回复其他内容暂时由聊天机器人回答'''
         return reply
 
@@ -63,10 +84,11 @@ def handler(msg):
         return create_reply(reply, msg)
     elif msg.type == 'event':
         reply = handler_event(msg.event)
-        return create_reply(reply,msg)
+        return create_reply(reply, msg)
     else:
         return create_reply('Sorry, I can not handle this for now', msg)
 
 
 if __name__ == '__main__':
     handler_text('歌曲,给我一首')
+    handler_text('公众号,雪球')
