@@ -18,9 +18,18 @@ def search_music(kws):
     payload = {'s': kws, 'limit': '1', 'type': '1', 'offset': 0}
     r = requests.post(url, cookies=cookies, headers=headers, data=payload)
     if r.json()['code'] == 200:
-        song = r.json()['result']['songs'][0]
-        return get_music(song)
+        return  r.json()['result']['songs'][0]
 
+
+
+if __name__ == '__main__':
+    r =search_music('道姑朋友')
+    print(r)
+    print(r['id'])
+    print(r['name'])
+    print(r['artists'][0]['name'])
+    print(r['artists'][0]['img1v1Url'])
+    print(r)
 
         # {
         #     'code': 200,
