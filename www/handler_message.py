@@ -5,6 +5,8 @@ from official_account import get_recent
 from robot import auto_chat_tuling
 from wechatpy import parse_message, create_reply
 from wechatpy.replies import TextReply, ArticlesReply
+from zhihu import getRecommend
+import random
 
 
 def reply_text(msg):
@@ -55,14 +57,32 @@ def reply_article(msg):
     articleReply.add_article(one)
     return articleReply
 
+def reply_zhihu():
+    articleReply = ArticlesReply()
+    num = random.randint(1,10)
+    results = getRecommend(str(num))
+    for result in results:
+        article = {}
+        article['url'] = 'https://zhuanlan.zhihu.com' + result['url']
+        article['image'] = result['image_url']
+        article['title'] = result['title']
+        article['description'] = result['author']['name']
+        articleReply.add_article(result)
+    return articleReply
+
+
 
 def handler_text(msg):
     ret = re.search(r'歌曲[,: ，。](.*)$', msg)
     if ret:
         return reply_music(ret.group(1))
+
     ret = re.search(r'公众号[,: ，。](.*)$', msg)
     if ret:
         return reply_article(ret.group(1))
+
+    if ret == '知乎':
+        return reply_zhihu()
 
     reply = auto_chat_tuling(msg)
     return reply_text(reply)
@@ -92,3 +112,4 @@ def handler(msg):
 if __name__ == '__main__':
     handler_text('歌曲,给我一首')
     handler_text('公众号,雪球')
+    handler_text('知乎')
